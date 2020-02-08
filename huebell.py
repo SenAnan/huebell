@@ -1,6 +1,7 @@
 from ring_doorbell import Ring, Auth
 import json
-from time import sleep
+import datetime
+import pytz
 
 # Get log in credentials from config file
 with open('config.json') as config_file:
@@ -19,25 +20,27 @@ ring.update_data()
 devices = ring.devices()
 doorbell = devices['doorbots'][0]
 
+print("\nLatest events:\n")
 for event in doorbell.history(5):
     print(event['id'])
     print(event['kind'])
     print(event['created_at'])
-    print('-'*30)
+    print('-'*30, "\n")
 
 # Check for doorbell ding events
-print("Checking the doorbell...")
-while True:
-    sleep(5)
+print("Checking the doorbell...\n")
+
+utc = pytz.UTC
+now = utc.localize(datetime.datetime.now())
+alert = False
+
+while not alert:
     for event in doorbell.history(1, kind='ding'):
-        if event:
-            print("*"*30, "Someone is at the door!", "*"*30, sep="\n")
+        if event and event['created_at'] > now:
+            print("*"*30, "Someone is at the door!", "*"*30, "", sep="\n")
             print(event)
             doorbell.recording_download(doorbell.history(limit=10, kind='ding')[0]['id'],
                                         filename='last_ding.mp4',
                                         override=True)
-            break
-    else:
-        continue
-
-    break
+            print("\nLatest alert video downloaded")
+            alert = True
