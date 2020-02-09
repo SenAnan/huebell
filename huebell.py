@@ -77,7 +77,10 @@ try:
                                         filename='last_ding.mp4',
                                         override=True)
             print("\n[Ring] Latest alert video downloaded")
+
+            # Comment out line below for continuous loop even after doorbell rung
             ding = True
+
 except KeyboardInterrupt:
     print("\nClosing down")
     sys.exit(0)
